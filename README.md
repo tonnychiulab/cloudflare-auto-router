@@ -1,6 +1,39 @@
-# Auto Router 實驗室：部署到自己的 Cloudflare Worker
+# Cloudflare Auto Router 實驗室 (Auto Router Lab)
 
-這個專案把網頁與 API 部署到你自己的 Cloudflare 帳號。瀏覽器不輸入 Gateway Token；Token 由 Worker Secret 提供。Worker 會驗證 Cloudflare Access JWT 的簽章、發行者、Audience 和有效期限；缺少或驗證失敗時拒絕所有請求。請自行設定 Access 政策，並確認只有指定的人可以登入。
+> ☁️ 部署於 Cloudflare Worker 的邊緣 AI 智慧路由流水線：結合 **Zero Trust Access 身分防護**、**AI Gateway 動態模型調度**、**自動降級容錯 (Fallback Protection)** 與 **免費額度即時儀表盤**。
+
+[![Deploy to Cloudflare Workers](https://github.com/tonnychiulab/cloudflare-auto-router/actions/workflows/deploy.yml/badge.svg)](https://github.com/tonnychiulab/cloudflare-auto-router/actions)
+[![Zero Trust Protected](https://img.shields.io/badge/Security-Zero%20Trust%20Access-orange.svg)](https://www.cloudflare.com/zero-trust/)
+
+---
+
+## 📸 介面與功能展示 (Screenshots)
+
+### 1. 現有模型與任務提交 (Model Selection & Zero Trust)
+支援 `cloudflare/auto` 智慧動態分析分流，或直接指定受支援的免費繁中模型（Meta Llama 3.2 3B/1B、Qwen 3 MoE），全程受 Cloudflare Access RS256 JWT 鑑權保護。
+
+![現有模型選單與任務提交](docs/images/model-selection.jpg)
+
+### 2. 成功推論與路由流水線 (Successful Inference & Visualizer)
+測試成功後，系統自動捲動至 03 路由流水線，即時呈現邊緣分類決策序號、命中的推論模型與往返毫秒延遲，並提供一鍵複製回答功能。
+
+![成功推論與路由結果](docs/images/success-result.jpg)
+
+### 3. 錯誤與自動降級防護情境 (Automatic Fallback Protection)
+在 Cloudflare 免費方案中，若 `cloudflare/auto` 挑中帳號未開通的付費模型（如 Moonshot Kimi K3）時會遭遇 HTTP 403。本實驗室實作後端自動降級機制，無縫切換至受支援的免費 Llama 3.2 模型順利回答，化解報錯。
+
+![付費模型遭遇 403 報錯情境](docs/images/failure-paid-403.jpg)
+
+---
+
+## ✨ 核心特色 (Key Features)
+
+- **邊緣免費額度儀表盤 (Free Quota Dashboard)**：開箱即用展示每日 100,000 次 Worker 請求、10,000 Neurons 免費算力與會話即時統計。
+- **Zero Trust 零信任身分驗證**：Worker 於邊緣直接校驗 RS256 JWKS 簽名、期限與 Audience Tag，無憑證直接攔截。
+- **智慧自動降級 (Auto-Fallback)**：解決 Auto Router 免費方案挑中付費 Kimi K3 報錯的痛點。
+- **嚴格模型白名單**：後端嚴格校驗請求模型，防止惡意消耗外部第三方 Provider 額度。
+- **完整 i18n 雙語系切換**：繁體中文（zh-TW）與英文（en-US）動態切換，瀏覽器 `<title>` 動態聯動。
+- **開源友善 CI/CD**：內建互動式導引精靈腳本與 GitHub Actions 自動化部署。
 
 ---
 
@@ -17,54 +50,24 @@ bash scripts/setup-cicd-wizard.sh
 
 ---
 
-## 🛠 自動化 CI/CD 架構 (GitHub Actions)
+## 🛠 手動部署流程 (Manual Setup)
 
-本專案支援開源友善的自動化部署：
-- 敏感金鑰（`CLOUDFLARE_API_TOKEN`）與環境變數（`CLOUDFLARE_ACCOUNT_ID`、`CF_ACCESS_AUD` 等）均由 GitHub Secrets & Variables 注入，**不會洩漏至 Git 倉庫**。
-- 每次推送至 `main` 分支時，GitHub Actions 會自動執行語法檢查並透過 `cloudflare/wrangler-action` 部署 Worker。
-
----
-
-## 需要準備
-
-- Cloudflare 帳號、已建立的 AI Gateway、Account ID 和 Gateway ID。
-- 一組專用、最小權限的 Cloudflare API Token（依官方 AI Gateway 文件與你的帳號設定授權）；不要把 Token 寫進程式、`wrangler.jsonc`、Git 或聊天。
-- Cloudflare Zero Trust，啟用 Access 並設定登入方式。
-- 電腦安裝 Node.js（建議使用 Wrangler 所支援的目前 LTS 版本）及 npm。
-- GitHub CLI (`gh`)（用於自動化建立遠端倉庫與同步 Secrets）。
-
-## 手動部署流程 (Manual Setup)
-
-若偏好手動設定，可參考以下步驟：
-
-1. 在終端機進入 `cloudflare-auto-router` 目錄，執行：
-
+1. 在終端機進入 `cloudflare-auto-router` 目錄，安裝相依套件並登入 Cloudflare：
    ```bash
    npm install
    npx wrangler login
    ```
 
 2. 複製本地開發設定範本：
-
    ```bash
    cp .dev.vars.example .dev.vars
    ```
-
    填入你的 `CLOUDFLARE_ACCOUNT_ID`、`CLOUDFLARE_GATEWAY_ID`、`CF_ACCESS_AUD`、`CF_ACCESS_TEAM_DOMAIN` 與 `CLOUDFLARE_API_TOKEN`。
 
-3. 到 Cloudflare 儀表板的 **Workers & Pages → auto-router-lab → Access → Protect this Worker behind Access**，選擇 **All traffic**；建立或選擇只允許你指定電子郵件登入的政策。
+3. 到 Cloudflare 儀表板的 **Workers & Pages → auto-router-lab → Access → Protect this Worker behind Access**，保護該 Worker 路由。
 
-4. 將專用 Token 放到 Worker Secret：
-
+4. 將專用 Token 放到 Worker Secret 並部署：
    ```bash
    npx wrangler secret put CLOUDFLARE_API_TOKEN
    npx wrangler deploy
    ```
-
-5. 開啟 Worker 網址，完成 Access 登入，輸入問題測試。
-
-## 注意事項與安全性
-
-- **費用控管**：請求可能有費用，建議在 AI Gateway 設定 spend limits、rate limiting 並定期查看用量。此範例沒有自行實作帳號額度或速率限制。
-- **日誌政策**：記錄內容取決於 Cloudflare Gateway 的日誌設定；請勿輸入敏感資料，除非你已確認適用的日誌和資料政策。
-- **Token 安全**：請使用自己的測試 Token，定期輪替；若疑似外洩，立刻撤銷並更新 Secret。

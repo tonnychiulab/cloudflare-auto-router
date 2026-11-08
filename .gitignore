@@ -9,3 +9,5 @@ node_modules/
 *.jpg
 *.jpeg
 *.png
+!docs/images/*.jpg
+!docs/images/*.png

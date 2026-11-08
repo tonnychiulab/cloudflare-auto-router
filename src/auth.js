@@ -29,12 +29,12 @@ export async function verifyAccess(request, env) {
     const now = Math.floor(Date.now() / 1000);
 
     // 驗證演算法、簽發者、Audience、過期時間
+    const audList = Array.isArray(payload.aud) ? payload.aud : [payload.aud];
     if (
       header.alg !== 'RS256' ||
       !header.kid ||
       payload.iss !== 'https://' + team ||
-      !Array.isArray(payload.aud) ||
-      !payload.aud.includes(aud) ||
+      !audList.includes(aud) ||
       !Number.isFinite(payload.exp) ||
       payload.exp <= now ||
       (payload.nbf && payload.nbf > now)
@@ -42,8 +42,13 @@ export async function verifyAccess(request, env) {
       return false;
     }
 
-    // 取得 Cloudflare 公鑰證書
-    const response = await fetch('https://' + team + '/cdn-cgi/access/certs');
+    // SEC-02: 取得 Cloudflare 公鑰證書（配置 Cloudflare 邊緣快取 1 小時，避免頻繁子請求導致延遲與 DoS 誤判）
+    const response = await fetch('https://' + team + '/cdn-cgi/access/certs', {
+      cf: {
+        cacheTtl: 3600,
+        cacheEverything: true
+      }
+    });
     if (!response.ok) return false;
 
     const keys = await response.json();

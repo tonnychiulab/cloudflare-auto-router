@@ -144,6 +144,7 @@ write_env() {
   grep -vE "^${key}=" "$ENV_FILE" > "$tmp" || true
   printf "%s='%s'\n" "$key" "${value//\'/$sq}" >> "$tmp"
   cat "$tmp" > "$ENV_FILE"
+  chmod 600 "$ENV_FILE" 2>/dev/null || true
   rm -f "$tmp"
   printf -v "$key" '%s' "$value"
   WRITTEN_ENV+=("$key")

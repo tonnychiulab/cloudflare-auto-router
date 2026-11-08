@@ -2,7 +2,7 @@
  * Cloudflare AI Gateway 調度與自動降級防護模組
  */
 
-import { DEFAULT_FALLBACK_MODEL } from './config/models.js';
+import { DEFAULT_FALLBACK_MODEL, SUPPORTED_MODELS } from './config/models.js';
 
 /**
  * 封裝向 Cloudflare AI Gateway 發送 chat completions 請求
@@ -44,9 +44,10 @@ export async function dispatchPrompt(prompt, requestedModel, env) {
     throw { code: 'CONFIG_INCOMPLETE', message: 'Worker 尚未完成 Gateway 或 Token 設定。', status: 500 };
   }
 
-  const targetModel = (typeof requestedModel === 'string' && requestedModel.trim())
-    ? requestedModel.trim()
-    : 'cloudflare/auto';
+  // SEC-01: 嚴格白名單比對，防止透過未受支援模型消耗其他付費 Provider 額度
+  const isAllowedModel = typeof requestedModel === 'string' &&
+    SUPPORTED_MODELS.some(m => m.id === requestedModel.trim());
+  const targetModel = isAllowedModel ? requestedModel.trim() : 'cloudflare/auto';
 
   const gatewayUrl = `https://gateway.ai.cloudflare.com/v1/${accountId}/${gatewayId}/compat/chat/completions`;
   const headers = {
@@ -92,12 +93,12 @@ export async function dispatchPrompt(prompt, requestedModel, env) {
   }
 
   if (!currentRes.ok) {
-    const detail = currentData?.error?.message || currentData?.errors?.[0]?.message || (typeof currentData === 'object' ? JSON.stringify(currentData) : '');
+    const detail = currentData?.error?.message || currentData?.errors?.[0]?.message || '';
     throw {
       code: 'GATEWAY_ERROR',
       message: `Cloudflare 回傳 HTTP ${currentRes.status}${detail ? '：' + detail : ''}`,
       status: 502,
-      raw: currentData
+      details: detail || undefined
     };
   }
 

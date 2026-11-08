@@ -17,9 +17,19 @@ export default {
           { status: 403, headers: { 'cache-control': 'no-store' } }
         );
       }
+      // SEC-04: 為 403 錯誤頁面補充完整安全標頭 (CSP, Frame protection)
       return new Response(
         '<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><title>需要 Cloudflare Access 登入</title></head><body style="font-family:sans-serif;padding:40px;text-align:center"><h2>🔒 需要有效的 Cloudflare Access 登入</h2><p>請檢查 Cloudflare Access 權限與憑據配置。</p></body></html>',
-        { status: 403, headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' } }
+        {
+          status: 403,
+          headers: {
+            'content-type': 'text/html; charset=utf-8',
+            'cache-control': 'no-store',
+            'x-content-type-options': 'nosniff',
+            'referrer-policy': 'no-referrer',
+            'content-security-policy': "default-src 'self'; style-src 'unsafe-inline'; base-uri 'none'; frame-ancestors 'none'"
+          }
+        }
       );
     }
 
@@ -52,7 +62,9 @@ export default {
         const status = err.status || 500;
         const code = err.code || 'INTERNAL_ERROR';
         const message = err.message || '連線失敗，請稍後再試。';
-        return Response.json({ error: { code, message, details: err.raw } }, { status });
+        // SEC-03: 僅回傳過濾後的安全字串細節，防止上游 raw JSON 與內部架構外洩
+        const details = typeof err.details === 'string' ? err.details : undefined;
+        return Response.json({ error: { code, message, details } }, { status });
       }
     }
 

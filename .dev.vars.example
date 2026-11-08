@@ -1,0 +1,8 @@
+# 本地開發變數範本 (Wrangler 本地測試用)
+# 複製此檔案為 .dev.vars 並填入實際值：cp .dev.vars.example .dev.vars
+
+CLOUDFLARE_ACCOUNT_ID="your_account_id_here"
+CLOUDFLARE_GATEWAY_ID="your_gateway_id_here"
+CF_ACCESS_TEAM_DOMAIN="your-team.cloudflareaccess.com"
+CF_ACCESS_AUD="your_access_application_audience_tag"
+CLOUDFLARE_API_TOKEN="your_cloudflare_api_token_here"

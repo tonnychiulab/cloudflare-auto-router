@@ -1,0 +1,12 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "auto-router-lab",
+  "main": "src/index.js",
+  "compatibility_date": "2026-11-01",
+  "vars": {
+    "CLOUDFLARE_ACCOUNT_ID": "",
+    "CLOUDFLARE_GATEWAY_ID": "",
+    "CF_ACCESS_TEAM_DOMAIN": "",
+    "CF_ACCESS_AUD": ""
+  }
+}

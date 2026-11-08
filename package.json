@@ -1,0 +1,13 @@
+{
+  "name": "auto-router-lab",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "check": "node --check src/index.js",
+    "wizard": "bash scripts/setup-cicd-wizard.sh"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}

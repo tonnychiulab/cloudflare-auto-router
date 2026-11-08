@@ -16,6 +16,7 @@ export function renderHtml() {
 header{background:var(--cf-dark);color:white;padding:16px max(6vw,24px);display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid var(--cf-orange);flex-wrap:wrap;gap:10px}
 header .brand{display:flex;align-items:center;gap:12px;font-size:18px;font-weight:700;letter-spacing:-.02em}
 header .brand svg{width:26px;height:26px;fill:var(--cf-orange)}
+header .brand .version-tag{background:rgba(255,255,255,.12);color:#fdba74;border:1px solid rgba(253,186,116,.3);font-size:11px;font-family:ui-monospace,Menlo,monospace;padding:2px 7px;border-radius:12px;font-weight:700;margin-left:4px}
 header .header-controls{display:flex;align-items:center;gap:10px}
 header .sub{color:#94a3b8;font-size:13px;font-weight:500}
 main{max-width:1200px;margin:auto;padding:36px 20px}
@@ -133,6 +134,7 @@ button.primary:disabled{opacity:.5;cursor:wait}
   <div class="brand">
     <svg viewBox="0 0 24 24"><path d="M18.8 9.5C18.2 6.4 15.4 4 12 4 9.3 4 7 5.5 6 7.8 3.7 8.3 2 10.4 2 12.9c0 2.8 2.2 5.1 5 5.1h11.5c2.5 0 4.5-2 4.5-4.5 0-2.3-1.8-4.2-4.2-4z"/></svg>
     <span data-i18n="headerTitle">CLOUDFLARE <b>AI GATEWAY</b></span>
+    <span class="version-tag">v1.0.0</span>
   </div>
   <div class="header-controls">
     <button type="button" class="header-btn" id="btn-lang-toggle">🌐 繁體中文 / EN</button>
@@ -309,7 +311,9 @@ button.primary:disabled{opacity:.5;cursor:wait}
     </section>
   </div>
 
-  <p class="footer">Cloudflare AI Gateway · Auto Router Lab · <a href="https://developers.cloudflare.com/ai-gateway/features/routing/auto-router/" target="_blank" rel="noopener" style="color:var(--cf-orange);text-decoration:none">官方文件 ↗</a></p>
+  <p class="footer">
+    Cloudflare Auto Router 實驗室 · <b>v1.0.0</b> · 共同作者：<a href="https://github.com/tonnychiulab" target="_blank" rel="noopener" style="color:var(--cf-text);font-weight:700;text-decoration:none">Tonny Chiu</a> &amp; <b>Antigravity</b> (AI Pair Programmer) · <a href="https://github.com/tonnychiulab/cloudflare-auto-router" target="_blank" rel="noopener" style="color:var(--cf-orange);text-decoration:none">GitHub 原始碼 ↗</a>
+  </p>
 
   <!-- Modal Popup: Cloudflare Free Ecosystem -->
   <div id="cf-modal" class="modal-overlay" style="display:none">

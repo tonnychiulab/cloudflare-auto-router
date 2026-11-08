@@ -13,3 +13,8 @@ Canonical 5-role triage vocabulary with 1:1 mapping. See `docs/agents/triage-lab
 ### Domain docs
 
 Single-context layout (`GLOSSARY.md` and `docs/adr/` at repo root). See `docs/agents/domain.md`.
+
+### Frontend standards
+
+Browser experience (Favicon, `<title>`, i18n synchronization) and strict terminology consistency. See `docs/agents/frontend-standards.md`.
+

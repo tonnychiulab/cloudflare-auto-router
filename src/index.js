@@ -1,8 +1,284 @@
-const html = `<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Auto Router 實驗室</title><style>
-:root{font-family:system-ui,-apple-system,sans-serif;color:#202431;background:#f5f4f0}*{box-sizing:border-box}body{margin:0}header{background:#20283b;color:white;padding:22px max(6vw,24px);display:flex;justify-content:space-between;align-items:center}header b{font-size:19px}header span{color:#f6aa63;font-size:13px}main{max-width:1180px;margin:auto;padding:44px 24px}h1{font-size:clamp(30px,5vw,48px);letter-spacing:-.04em;margin:8px 0}h2{font-size:19px;margin:0 0 16px}p{line-height:1.7;color:#687080}.eyebrow{color:#c76526;font-weight:700;letter-spacing:.1em;font-size:12px}.intro{max-width:710px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:30px}.card{background:white;border:1px solid #e3e3df;border-radius:16px;padding:25px;box-shadow:0 8px 30px #252a3210}.wide{grid-column:1/-1}.tag{background:#fff2e6;color:#a84c15;border-radius:20px;padding:6px 10px;font-size:12px;font-weight:700}.row{display:flex;justify-content:space-between;align-items:center;gap:10px}label{display:block;font-size:13px;font-weight:700;margin:16px 0 7px}input,textarea{width:100%;border:1px solid #d6d9dd;border-radius:8px;padding:11px;font:inherit;background:#fff}textarea{resize:vertical;min-height:135px}input:focus,textarea:focus{outline:2px solid #f2a35e;border-color:transparent}button{border:0;border-radius:9px;padding:12px 16px;cursor:pointer;font:inherit;font-weight:700;background:#e66e21;color:white}button:disabled{opacity:.5;cursor:wait}.samples{display:flex;flex-wrap:wrap;gap:7px}.samples button{background:#f4f5f7;color:#525c6d;font-size:12px;padding:8px 10px}.hint{font-size:12px;margin:8px 0;color:#747b86}.result{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.7;background:#f7f8fa;border-radius:10px;padding:18px;min-height:125px;color:#394253}.metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}.metric{background:#f7f8fa;padding:13px;border-radius:9px;overflow-wrap:anywhere}.metric small{display:block;color:#7a8190;margin-bottom:5px}.metric strong{font-size:13px}details{font-size:14px;color:#5c6473;line-height:1.8}summary{cursor:pointer;font-weight:700;color:#333b49}.footer{font-size:12px;color:#868c95;margin-top:25px}@media(max-width:700px){.grid{grid-template-columns:1fr}.wide{grid-column:auto}main{padding:30px 16px}header{padding:18px}.card{padding:20px}}
-</style></head><body><header><b>☁ AUTO ROUTER <span>LAB</span></b><span>AI GATEWAY · 體驗與驗證</span></header><main><div class="eyebrow">CLOUDFLARE AI GATEWAY</div><h1>看看 AI 如何選擇模型。</h1><p class="intro">輸入問題，觀察 Auto Router 的回答與路由資訊。換個任務再試一次，探索不同問題可能使用的模型。</p><div class="grid"><section class="card"><div class="row"><h2>01 / 安全連線</h2><span class="tag">Cloudflare Access</span></div><p>此版本使用 Cloudflare Access 登入，API Token 儲存在你的 Worker Secret。瀏覽器不需要輸入 Token。</p><p class="hint">只有通過 Access 驗證的使用者能發出請求。</p></section><section class="card"><div class="row"><h2>02 / 提出任務</h2><span class="tag">cloudflare/auto</span></div><div class="samples"><button type="button" data-prompt="請用一句話解釋什麼是 DNS。">簡單問答</button><button type="button" data-prompt="請比較三種網頁快取策略，列出優缺點及適用情境。">比較分析</button><button type="button" data-prompt="請用 JavaScript 寫一個 debounce 函式，附上簡短範例與說明。">程式任務</button></div><label for="target-model">測試模型</label><select id="target-model" style="width:100%;border:1px solid #d6d9dd;border-radius:8px;padding:9px;font:inherit;background:#fff;margin-top:6px;margin-bottom:8px"><option value="@cf/meta/llama-3.2-3b-instruct">@cf/meta/llama-3.2-3b-instruct (Meta 3.2 3B 推薦 / 免費)</option><option value="@cf/meta/llama-3.2-1b-instruct">@cf/meta/llama-3.2-1b-instruct (Meta 3.2 1B 極速 / 免費)</option><option value="@cf/qwen/qwen3-30b-a3b-fp8">@cf/qwen/qwen3-30b-a3b-fp8 (Qwen 3 30B MoE 中文 / 免費)</option><option value="cloudflare/auto">cloudflare/auto (Auto Router 智慧路由 · 支援免費自動降級)</option></select><label for="prompt">你的問題</label><textarea id="prompt" placeholder="輸入想讓 AI 處理的任務…">請用一句話解釋什麼是 DNS。</textarea><button id="send">開始測試 →</button><p class="hint">每次測試都會產生真實 API 請求，可能產生模型費用。模型池與資格依 Cloudflare 設定而異。</p></section><section class="card wide"><div class="row"><h2>03 / 路由結果</h2><span class="tag" id="status">等待測試</span></div><div class="result" id="answer">送出問題後，這裡會顯示模型回答與路由資訊。</div><div class="metrics"><div class="metric"><small>實際模型</small><strong id="model">—</strong></div><div class="metric"><small>路由原因</small><strong id="reason">—</strong></div><div class="metric"><small>耗時（含網路）</small><strong id="time">—</strong></div><div class="metric"><small>Routing decision ID</small><strong id="decision">—</strong></div></div><p class="hint">路由資訊來自 Cloudflare 回應標頭；若未提供會顯示「未提供」。耗時為瀏覽器端測量，不等同模型推論時間。</p></section></div><p class="footer">Auto Router 為 Cloudflare 的 Beta 功能。<a href="https://developers.cloudflare.com/ai-gateway/features/routing/auto-router/" target="_blank" rel="noopener">查看官方文件 ↗</a></p></main><script>
-const $=id=>document.getElementById(id);document.querySelectorAll('[data-prompt]').forEach(b=>b.onclick=()=>{$('prompt').value=b.dataset.prompt});$('send').onclick=async()=>{const prompt=$('prompt').value.trim();if(!prompt){$('status').textContent='資料未填完整';$('answer').textContent='請輸入問題。';return}const button=$('send');button.disabled=true;$('status').textContent='請求中';$('answer').textContent='正在等待 Cloudflare 回應…';['model','reason','time','decision'].forEach(k=>$(k).textContent='—');const start=performance.now();try{const res=await fetch('/api/test',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt,model:$('target-model')?$('target-model').value:'cloudflare/auto'})});const data=await res.json();$('time').textContent=((performance.now()-start)/1000).toFixed(2)+' 秒';if(!res.ok)throw Error(data.error||'請求失敗');$('answer').textContent=data.answer||'已收到回應，但沒有文字內容。';$('model').textContent=data.model||'未提供';$('reason').textContent=data.reason||'未提供';$('decision').textContent=data.decision||'未提供';$('status').textContent='完成'}catch(e){$('status').textContent='請求失敗';$('answer').textContent=e.message+'\\n請檢查 Access、Worker Secret、Gateway 設定及模型計費。'}finally{button.disabled=false}};
+const html = `<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Cloudflare Auto Router 實驗室</title><style>
+:root{--cf-orange:#f6821f;--cf-orange-hover:#e06d12;--cf-dark:#151b28;--cf-navy:#1e293b;--cf-bg:#f8fafc;--cf-border:#e2e8f0;--cf-text:#0f172a;--cf-muted:#64748b;--cf-green:#10b981;--cf-amber:#f59e0b;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;color:var(--cf-text);background:var(--cf-bg)}
+*{box-sizing:border-box}body{margin:0;line-height:1.6}
+header{background:var(--cf-dark);color:white;padding:18px max(6vw,24px);display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid var(--cf-orange)}
+header .brand{display:flex;align-items:center;gap:12px;font-size:18px;font-weight:700;letter-spacing:-.02em}
+header .brand svg{width:26px;height:26px;fill:var(--cf-orange)}
+header .sub{color:#94a3b8;font-size:13px;font-weight:500}
+main{max-width:1200px;margin:auto;padding:36px 20px}
+.eyebrow{color:var(--cf-orange);font-weight:700;letter-spacing:.12em;font-size:11px;text-transform:uppercase}
+h1{font-size:clamp(28px,4vw,42px);letter-spacing:-.03em;margin:6px 0 10px;font-weight:800}
+.intro{max-width:760px;color:var(--cf-muted);font-size:15px;margin-bottom:28px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.card{background:#fff;border:1px solid var(--cf-border);border-radius:12px;padding:22px;box-shadow:0 4px 12px rgba(15,23,42,.03)}
+.wide{grid-column:1/-1}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.tag{background:#fff7ed;color:var(--cf-orange);border:1px solid #fed7aa;border-radius:20px;padding:4px 10px;font-size:12px;font-weight:700}
+label{display:block;font-size:13px;font-weight:700;margin:14px 0 6px;color:#334155}
+input,select,textarea{width:100%;border:1px solid #cbd5e1;border-radius:8px;padding:10px 12px;font:inherit;background:#fff;color:inherit}
+textarea{resize:vertical;min-height:115px}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--cf-orange);border-color:transparent}
+button.primary{border:0;border-radius:8px;padding:12px 20px;cursor:pointer;font:inherit;font-weight:700;background:var(--cf-orange);color:white;transition:background .15s}
+button.primary:hover{background:var(--cf-orange-hover)}
+button.primary:disabled{opacity:.5;cursor:wait}
+.samples{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.samples button{background:#f1f5f9;color:#475569;font-size:12px;padding:6px 10px;border:1px solid #e2e8f0;border-radius:6px;cursor:pointer}
+.samples button:hover{background:#e2e8f0}
+.hint{font-size:12px;margin:8px 0;color:var(--cf-muted)}
+
+/* Pipeline Visualizer (方案 1) */
+.pipeline-box{background:linear-gradient(180deg,#fff 0%,#f8fafc 100%);border:1px solid var(--cf-border);border-radius:12px;padding:20px;margin-bottom:20px}
+.pipeline-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;border-bottom:1px solid var(--cf-border);padding-bottom:12px}
+.pipeline-bar .status-pill{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:700;padding:4px 12px;border-radius:20px}
+.pill-idle{background:#f1f5f9;color:#64748b}
+.pill-running{background:#fef3c7;color:#b45309}
+.pill-success{background:#ecfdf5;color:#047857;border:1px solid #a7f3d0}
+.pill-fallback{background:#fff7ed;color:#c2410c;border:1px solid #ffedd5}
+.pulsing-dot{width:8px;height:8px;border-radius:50%;background:#10b981;box-shadow:0 0 0 rgba(16,185,129,.5);animation:pulse 2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(16,185,129,.7)}70%{box-shadow:0 0 0 8px rgba(16,185,129,0)}100%{box-shadow:0 0 0 0 rgba(16,185,129,0)}}
+
+.pipeline-flow{display:grid;grid-template-columns:1fr auto 1.2fr auto 1.5fr auto 1fr;align-items:center;gap:10px}
+.pipe-step{background:#fff;border:1px solid #cbd5e1;border-radius:10px;padding:12px 14px;box-shadow:0 2px 4px rgba(15,23,42,.04);position:relative}
+.pipe-step.active{border-color:var(--cf-orange);box-shadow:0 0 0 2px rgba(246,130,31,.2)}
+.pipe-step.fallback{border-color:var(--cf-amber);box-shadow:0 0 0 2px rgba(245,158,11,.2)}
+.pipe-step .step-num{font-size:10px;font-weight:800;letter-spacing:.08em;color:var(--cf-muted);display:block;margin-bottom:2px}
+.pipe-step .step-title{font-size:13px;font-weight:700;display:block;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pipe-step .step-badge{font-size:11px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;display:inline-block;padding:2px 6px;border-radius:4px;margin-top:4px;background:#f1f5f9;color:#475569}
+.pipe-step.active .step-badge{background:#fff7ed;color:var(--cf-orange);font-weight:700}
+.pipe-step.fallback .step-badge{background:#fffbeb;color:#b45309;font-weight:700}
+.pipe-arrow{color:#94a3b8;font-size:16px;display:flex;align-items:center;justify-content:center}
+
+/* Response Section */
+.response-box{border:1px solid #cbd5e1;border-radius:10px;overflow:hidden;background:#fff;margin-top:16px}
+.response-head{background:#f8fafc;padding:10px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #e2e8f0;font-size:12px;font-weight:700;color:#475569}
+.response-body{padding:18px 20px;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.75;font-size:15px;color:#1e293b;min-height:90px}
+.btn-copy{background:#fff;border:1px solid #cbd5e1;border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer;font-weight:600;color:#475569}
+.btn-copy:hover{background:#f1f5f9}
+
+/* Telemetry Grid */
+.telemetry-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:16px}
+.tel-item{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px 12px}
+.tel-item small{font-size:11px;color:var(--cf-muted);display:block}
+.tel-item strong{font-size:13px;color:#1e293b;word-break:break-all}
+.footer{font-size:12px;color:var(--cf-muted);margin-top:32px;text-align:center}
+
+@media(max-width:860px){
+  .grid{grid-template-columns:1fr}
+  .pipeline-flow{grid-template-columns:1fr;gap:8px}
+  .pipe-arrow{transform:rotate(90deg);padding:4px 0}
+  .telemetry-grid{grid-template-columns:1fr 1fr}
+}
+</style></head><body>
+<header>
+  <div class="brand">
+    <svg viewBox="0 0 24 24"><path d="M18.8 9.5C18.2 6.4 15.4 4 12 4 9.3 4 7 5.5 6 7.8 3.7 8.3 2 10.4 2 12.9c0 2.8 2.2 5.1 5 5.1h11.5c2.5 0 4.5-2 4.5-4.5 0-2.3-1.8-4.2-4.2-4z"/></svg>
+    <span>CLOUDFLARE <b>AI GATEWAY</b></span>
+  </div>
+  <span class="sub">Auto Router 智慧路由流水線</span>
+</header>
+<main>
+  <div class="eyebrow">Cloudflare Zero Trust & AI Gateway</div>
+  <h1>Auto Router 即時路由決策管線</h1>
+  <p class="intro">觀察 Cloudflare Edge 邊緣分類器如何分析 Prompt，動態決策並路由至最佳 LLM 模型。支援即時免費容錯自動降級（Automatic Fallback）。</p>
+
+  <div class="grid">
+    <!-- Section 01 -->
+    <section class="card">
+      <div class="row">
+        <h2>01 / 存取防護</h2>
+        <span class="tag">Zero Trust Access</span>
+      </div>
+      <p class="hint">透過 Cloudflare Access RS256 JWT 驗證，僅授權使用者可存取此 Worker；Token 儲存於 Worker Secret，客戶端不洩漏任何憑據。</p>
+      <div style="margin-top:12px;display:flex;align-items:center;gap:8px;font-size:13px;color:#047857;background:#ecfdf5;padding:8px 12px;border-radius:6px;border:1px solid #a7f3d0">
+        <span class="pulsing-dot"></span> <b>Access JWT 驗證通過 · 安全連線中</b>
+      </div>
+    </section>
+
+    <!-- Section 02 -->
+    <section class="card">
+      <div class="row">
+        <h2>02 / 任務提交</h2>
+        <span class="tag">cloudflare/auto</span>
+      </div>
+      <div class="samples">
+        <button type="button" data-prompt="請用一句話解釋什麼是 DNS。">簡單問答</button>
+        <button type="button" data-prompt="請用一句話解釋什麼是 DDoS。">資安概念</button>
+        <button type="button" data-prompt="請比較邊緣運算 (Edge) 與傳統雲端伺服器的優缺點。">架構分析</button>
+        <button type="button" data-prompt="請用 JavaScript 寫一個 debounce 函式，附上說明。">程式任務</button>
+      </div>
+      <label for="target-model">指定路由策略 / 模型</label>
+      <select id="target-model">
+        <option value="cloudflare/auto">cloudflare/auto (Auto Router 智慧路由 · 支援免費自動降級)</option>
+        <option value="@cf/meta/llama-3.2-3b-instruct">@cf/meta/llama-3.2-3b-instruct (Meta 3.2 3B · 免費秒回)</option>
+        <option value="@cf/meta/llama-3.2-1b-instruct">@cf/meta/llama-3.2-1b-instruct (Meta 3.2 1B · 極速輕量)</option>
+        <option value="@cf/qwen/qwen3-30b-a3b-fp8">@cf/qwen/qwen3-30b-a3b-fp8 (Qwen 3 30B MoE · 中文開源)</option>
+      </select>
+      <label for="prompt">提問 Prompt</label>
+      <textarea id="prompt" placeholder="輸入你想讓 AI 解決的任務…">請用一句話解釋什麼是 DNS。</textarea>
+      <div style="margin-top:14px">
+        <button class="primary" id="send">開始測試管線 →</button>
+      </div>
+    </section>
+
+    <!-- Section 03: Hero Pipeline (方案 1) -->
+    <section class="card wide">
+      <div class="row" style="margin-bottom:12px">
+        <h2>03 / 路由流水線 (Pipeline Visualizer)</h2>
+        <span class="tag" id="status-tag">待命 (Standby)</span>
+      </div>
+
+      <div class="pipeline-box">
+        <div class="pipeline-bar">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span class="pulsing-dot" id="live-dot" style="background:#94a3b8"></span>
+            <span style="font-size:12px;font-weight:800;letter-spacing:.08em;color:#475569">EDGE ROUTING PIPELINE</span>
+          </div>
+          <div class="status-pill pill-idle" id="pipeline-pill">READY</div>
+        </div>
+
+        <div class="pipeline-flow">
+          <!-- Stage 1 -->
+          <div class="pipe-step" id="step-prompt">
+            <span class="step-num">STAGE 01</span>
+            <strong class="step-title">任務請求</strong>
+            <span class="step-badge" id="val-prompt-stat">待輸入</span>
+          </div>
+
+          <div class="pipe-arrow">▶</div>
+
+          <!-- Stage 2 -->
+          <div class="pipe-step" id="step-router">
+            <span class="step-num">STAGE 02</span>
+            <strong class="step-title">AI Gateway 決策</strong>
+            <span class="step-badge" id="val-router-mode">cloudflare/auto</span>
+          </div>
+
+          <div class="pipe-arrow">▶</div>
+
+          <!-- Stage 3 -->
+          <div class="pipe-step" id="step-model">
+            <span class="step-num">STAGE 03</span>
+            <strong class="step-title">命中的推論模型</strong>
+            <span class="step-badge" id="val-model-name">—</span>
+          </div>
+
+          <div class="pipe-arrow">▶</div>
+
+          <!-- Stage 4 -->
+          <div class="pipe-step" id="step-latency">
+            <span class="step-num">STAGE 04</span>
+            <strong class="step-title">邊緣往返耗時</strong>
+            <span class="step-badge" id="val-latency">—</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Response Card -->
+      <div class="response-box">
+        <div class="response-head">
+          <span>AI MODEL RESPONSE</span>
+          <button type="button" class="btn-copy" id="btn-copy">📋 複製回答</button>
+        </div>
+        <div class="response-body" id="answer">送出提問後，此處將即時呈現模型生成內容。</div>
+      </div>
+
+      <!-- Telemetry Inspector -->
+      <div class="telemetry-grid">
+        <div class="tel-item"><small>實際模型 (Routed Model)</small><strong id="metric-model">—</strong></div>
+        <div class="tel-item"><small>路由原因 (Routing Reason)</small><strong id="metric-reason">—</strong></div>
+        <div class="tel-item"><small>耗時 (Edge Latency)</small><strong id="metric-time">—</strong></div>
+        <div class="tel-item"><small>決策序號 (Decision ID)</small><strong id="metric-decision" style="font-family:monospace;font-size:11px">—</strong></div>
+      </div>
+    </section>
+  </div>
+
+  <p class="footer">Cloudflare AI Gateway · Auto Router Lab · <a href="https://developers.cloudflare.com/ai-gateway/features/routing/auto-router/" target="_blank" rel="noopener" style="color:var(--cf-orange);text-decoration:none">官方文件 ↗</a></p>
+</main>
+
+<script>
+const $=id=>document.getElementById(id);
+document.querySelectorAll('[data-prompt]').forEach(b=>b.onclick=()=>{$('prompt').value=b.dataset.prompt});
+
+$('btn-copy').onclick=()=>{
+  const text=$('answer').textContent;
+  if(!text||text.includes('送出提問後'))return;
+  navigator.clipboard.writeText(text);
+  $('btn-copy').textContent='✓ 已複製！';
+  setTimeout(()=>{$('btn-copy').textContent='📋 複製回答'},2000);
+};
+
+$('send').onclick=async()=>{
+  const prompt=$('prompt').value.trim();
+  if(!prompt){
+    $('status-tag').textContent='請先輸入問題';
+    $('answer').textContent='請輸入想提問的內容。';
+    return;
+  }
+  const btn=$('send');
+  btn.disabled=true;
+  
+  // Update Pipeline to Running state
+  $('status-tag').textContent='路由處理中…';
+  $('pipeline-pill').className='status-pill pill-running';
+  $('pipeline-pill').textContent='ROUTING IN PROGRESS';
+  $('live-dot').style.background='#f59e0b';
+  $('step-prompt').className='pipe-step active';
+  $('val-prompt-stat').textContent=prompt.length+' 字元 (已接收)';
+  $('val-router-mode').textContent=$('target-model').value==='cloudflare/auto'?'Auto Router (智慧分析)':'Direct (指定模型)';
+  $('val-model-name').textContent='匹配模型中…';
+  $('val-latency').textContent='計時中…';
+  ['metric-model','metric-reason','metric-time','metric-decision'].forEach(k=>$(k).textContent='—');
+  $('answer').textContent='正在等待 Cloudflare AI Gateway 邊緣路由回應…';
+
+  const start=performance.now();
+  try{
+    const res=await fetch('/api/test',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({prompt,model:$('target-model').value})
+    });
+    const data=await res.json();
+    const duration=((performance.now()-start)/1000).toFixed(2);
+    $('val-latency').textContent=duration+' 秒';
+    $('metric-time').textContent=duration+' 秒';
+
+    if(!res.ok)throw new Error(data.error||'請求失敗');
+
+    // Success State
+    $('status-tag').textContent='管線完成 (200 OK)';
+    $('answer').textContent=data.answer||'已收到回應，但無文字內容。';
+    
+    const isFallback=data.model&&data.model.includes('(自動降級)');
+    if(isFallback){
+      $('pipeline-pill').className='status-pill pill-fallback';
+      $('pipeline-pill').textContent='AUTO-FALLBACK ⚠️';
+      $('step-model').className='pipe-step fallback';
+      $('val-model-name').textContent='Llama 3.2 3B (降級保護)';
+      $('live-dot').style.background='#ea580c';
+    }else{
+      $('pipeline-pill').className='status-pill pill-success';
+      $('pipeline-pill').textContent='ROUTED ✓';
+      $('step-model').className='pipe-step active';
+      $('val-model-name').textContent=data.model?data.model.replace('@cf/',''):'未提供';
+      $('live-dot').style.background='#10b981';
+    }
+
+    $('metric-model').textContent=data.model||'未提供';
+    $('metric-reason').textContent=data.reason||'未提供';
+    $('metric-decision').textContent=data.decision||'未提供';
+
+  }catch(e){
+    $('status-tag').textContent='處理失敗';
+    $('pipeline-pill').className='status-pill pill-running';
+    $('pipeline-pill').textContent='ERROR ✗';
+    $('live-dot').style.background='#ef4444';
+    $('answer').textContent=e.message+'\\n請檢查 Access、Worker Secret、Gateway 設定及模型計費。';
+  }finally{
+    btn.disabled=false;
+  }
+};
 </script></body></html>`;
+
 const decode = s => Uint8Array.from(atob(s.replace(/-/g,'+').replace(/_/g,'/').padEnd(Math.ceil(s.length/4)*4,'=')), c=>c.charCodeAt(0));
 async function verifyAccess(request, env) {
   const team=env.CF_ACCESS_TEAM_DOMAIN, aud=env.CF_ACCESS_AUD;
@@ -19,6 +295,7 @@ async function verifyAccess(request, env) {
     return await crypto.subtle.verify('RSASSA-PKCS1-v1_5',key,decode(parts[2]),new TextEncoder().encode(parts[0]+'.'+parts[1]));
   } catch{return false}
 }
+
 export default {async fetch(request,env){
   if(!await verifyAccess(request,env))return new Response('需要有效的 Cloudflare Access 登入。請檢查 Access 設定。',{status:403,headers:{'cache-control':'no-store'}});
   const url=new URL(request.url);

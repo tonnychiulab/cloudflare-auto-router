@@ -1,72 +1,88 @@
-# Cloudflare Auto Router 實驗室 (Auto Router Lab)
+# Cloudflare Auto Router 實驗室 🚀
 
-> ☁️ 部署於 Cloudflare Worker 的邊緣 AI 智慧路由流水線：結合 **Zero Trust Access 身分防護**、**AI Gateway 動態模型調度**、**自動降級容錯 (Fallback Protection)** 與 **免費額度即時儀表盤**。
+> ☁️ 用 Cloudflare 佛心免費方案玩轉 AI Gateway！自帶 **Zero Trust 零信任鑑權**、**踩坑 403 自動降級 (Auto-Fallback)** 與 **即時視覺化流水線**，打造不需要 GPU、不怕收到天價帳單的邊緣 AI 服務。
 
 [![Deploy to Cloudflare Workers](https://github.com/tonnychiulab/cloudflare-auto-router/actions/workflows/deploy.yml/badge.svg)](https://github.com/tonnychiulab/cloudflare-auto-router/actions)
 [![Zero Trust Protected](https://img.shields.io/badge/Security-Zero%20Trust%20Access-orange.svg)](https://www.cloudflare.com/zero-trust/)
 
 ---
 
-## 📸 介面與功能展示 (Screenshots)
+## 💡 為什麼做這個專案？
 
-### 1. 現有模型與任務提交 (Model Selection & Zero Trust)
-支援 `cloudflare/auto` 智慧動態分析分流，或直接指定受支援的免費繁中模型（Meta Llama 3.2 3B/1B、Qwen 3 MoE），全程受 Cloudflare Access RS256 JWT 鑑權保護。
+Cloudflare AI Gateway 的 `cloudflare/auto`（Auto Router）能在邊緣端根據使用者 Prompt 智慧分流到最適合的模型。
+
+但免費帳號在實務上有個**大雷區**：
+> 💣 **踩雷現場**：Auto Router 遇到稍微複雜或中文的 Prompt 時，經常會動態挑選旗艦級的 Moonshot Kimi K3，但因為 Kimi K3 僅限付費版 Workers 存取，免費帳號會**直接噴 HTTP 403 報錯**（`AiError: This account is not allowed to access @cf/moonshotai/kimi-k3`）！
+
+### 我們的解法
+我們直接在 Worker 後端實作**自動降級防護 (Fallback Protection)**：
+一旦偵測到 Auto Router 挑中未開通的付費模型噴 403，Worker **在後端無縫切換到受支援的免費繁中模型（Meta Llama 3.2 3B）**順利回答，前端完全不卡關，享受 100% 免費穩定的邊緣 AI 推論體驗！
+
+---
+
+## 📸 實測畫面 (Screenshots)
+
+### 1. 任務提交與模型選單 (Model Selection)
+門口直接掛載 **Cloudflare Access (Zero Trust)** 進行 RS256 JWT 鑑權，前端不放任何 Token，安全感拉滿。支援自選 Llama 3.2 3B/1B、Qwen 3 MoE 或交給 Auto Router 決定。
 
 ![現有模型選單與任務提交](docs/images/model-selection.jpg)
 
-### 2. 成功推論與路由流水線 (Successful Inference & Visualizer)
-測試成功後，系統自動捲動至 03 路由流水線，即時呈現邊緣分類決策序號、命中的推論模型與往返毫秒延遲，並提供一鍵複製回答功能。
+### 2. 成功推論與流水線視覺化 (Pipeline Visualizer)
+提問送出後，頁面自動平滑捲動至流水線，一眼看清邊緣分類決策序號、實際命中的推論模型與往返延遲（約 0.5 秒秒回！），支援一鍵複製回答。
 
 ![成功推論與路由結果](docs/images/success-result.jpg)
 
-### 3. 錯誤與自動降級防護情境 (Automatic Fallback Protection)
-在 Cloudflare 免費方案中，若 `cloudflare/auto` 挑中帳號未開通的付費模型（如 Moonshot Kimi K3）時會遭遇 HTTP 403。本實驗室實作後端自動降級機制，無縫切換至受支援的免費 Llama 3.2 模型順利回答，化解報錯。
+### 3. 踩雷 403 報錯現場（本專案解決的痛點）
+這就是原本免費帳號呼叫 Auto Router 會遇到的 403 窘境——本專案的自動降級機制就是為了消滅這個報錯而生的！
 
 ![付費模型遭遇 403 報錯情境](docs/images/failure-paid-403.jpg)
 
 ---
 
-## ✨ 核心特色 (Key Features)
+## ⚡ 核心亮點
 
-- **邊緣免費額度儀表盤 (Free Quota Dashboard)**：開箱即用展示每日 100,000 次 Worker 請求、10,000 Neurons 免費算力與會話即時統計。
-- **Zero Trust 零信任身分驗證**：Worker 於邊緣直接校驗 RS256 JWKS 簽名、期限與 Audience Tag，無憑證直接攔截。
-- **智慧自動降級 (Auto-Fallback)**：解決 Auto Router 免費方案挑中付費 Kimi K3 報錯的痛點。
-- **嚴格模型白名單**：後端嚴格校驗請求模型，防止惡意消耗外部第三方 Provider 額度。
-- **完整 i18n 雙語系切換**：繁體中文（zh-TW）與英文（en-US）動態切換，瀏覽器 `<title>` 動態聯動。
-- **開源友善 CI/CD**：內建互動式導引精靈腳本與 GitHub Actions 自動化部署。
+- **邊緣免費額度儀表板**：頂部直接把每日 100,000 次 Worker 請求、10,000 Neurons 免費算力搬上檯面，會話即時跳表，隨時掌握水位。
+- **Zero Trust 零信任鑑權**：Worker 在邊緣直接校驗 RS256 JWKS 簽名與 Audience Tag，未登入者直接在門口被擋下。
+- **403 自動無痛降級**：後端攔截付費模型報錯，自動切換至免費繁中模型順利回覆。
+- **模型嚴格白名單**：後端嚴防未授權模型呼叫，不怕被惡意調用消耗昂貴的外部第三方 API。
+- **繁中 / 英文雙語系**：支援 i18n 即時切換，連瀏覽器 Tab 標題（`<title>`）都幫你同步連動。
+- **免手刻的 CI/CD 導引精靈**：自帶 `setup-cicd-wizard.sh` 互動腳本，敲幾個 Enter 就能自動建好 GitHub Actions 部署。
 
 ---
 
-## 🚀 快速開始：一鍵互動式部署精靈 (Wizard)
+## 🚀 快速上手：一鍵部署精靈 (Wizard)
 
-專案內建互動式導引精靈腳本，能一步一步引導你完成 GitHub 倉庫關聯、Cloudflare 憑據收集、自動寫入 GitHub Actions Secrets/Variables，並觸發 CI/CD 自動部署：
+不想手動填一堆變數？專案自帶互動式引導腳本，會一步一步教你拿 Cloudflare 憑據並自動寫進 GitHub Secrets：
 
 ```bash
-# 執行互動式部署導引精靈
+# 執行互動式部署精靈
 npm run wizard
-# 或是直接以 bash 執行
+# 或是直接以 bash 跑
 bash scripts/setup-cicd-wizard.sh
 ```
 
 ---
 
-## 🛠 手動部署流程 (Manual Setup)
+## 🛠 手動部屬流程 (Manual Setup)
 
-1. 在終端機進入 `cloudflare-auto-router` 目錄，安裝相依套件並登入 Cloudflare：
+如果你喜歡自己動手敲指令：
+
+1. **裝相依套件並登入 Cloudflare**：
    ```bash
    npm install
    npx wrangler login
    ```
 
-2. 複製本地開發設定範本：
+2. **複製本地設定檔範本**：
    ```bash
    cp .dev.vars.example .dev.vars
    ```
-   填入你的 `CLOUDFLARE_ACCOUNT_ID`、`CLOUDFLARE_GATEWAY_ID`、`CF_ACCESS_AUD`、`CF_ACCESS_TEAM_DOMAIN` 與 `CLOUDFLARE_API_TOKEN`。
+   把你的 `CLOUDFLARE_ACCOUNT_ID`、`CLOUDFLARE_GATEWAY_ID`、`CF_ACCESS_AUD`、`CF_ACCESS_TEAM_DOMAIN` 與 `CLOUDFLARE_API_TOKEN` 填進去。
 
-3. 到 Cloudflare 儀表板的 **Workers & Pages → auto-router-lab → Access → Protect this Worker behind Access**，保護該 Worker 路由。
+3. **到 Cloudflare 後台綁定 Zero Trust 保護**：
+   前往 **Workers & Pages → auto-router-lab → Access → Protect this Worker behind Access**，把流量保護起來。
 
-4. 將專用 Token 放到 Worker Secret 並部署：
+4. **將 Token 推進 Worker Secret 並上線**：
    ```bash
    npx wrangler secret put CLOUDFLARE_API_TOKEN
    npx wrangler deploy

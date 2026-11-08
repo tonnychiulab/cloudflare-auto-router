@@ -62,11 +62,35 @@ button.primary:disabled{opacity:.5;cursor:wait}
 .tel-item strong{font-size:13px;color:#1e293b;word-break:break-all}
 .footer{font-size:12px;color:var(--cf-muted);margin-top:32px;text-align:center}
 
+/* Cloudflare Ecosystem Modal */
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,23,42,.68);backdrop-filter:blur(5px);display:flex;align-items:center;justify-content:center;z-index:9999;padding:16px}
+.modal-card{background:#fff;border:1px solid var(--cf-border);border-radius:16px;max-width:680px;width:100%;padding:28px;box-shadow:0 20px 40px rgba(0,0,0,.2);position:relative;animation:modalIn .25s ease-out}
+@keyframes modalIn{from{opacity:0;transform:scale(.95) translateY(12px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.modal-close{position:absolute;top:16px;right:16px;background:none;border:none;font-size:18px;color:#94a3b8;cursor:pointer;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.modal-close:hover{background:#f1f5f9;color:#0f172a}
+.modal-badge{font-size:11px;font-weight:800;letter-spacing:.1em;color:var(--cf-orange);text-transform:uppercase;margin-bottom:6px}
+.modal-title{font-size:22px;font-weight:800;margin:0 0 8px;letter-spacing:-.02em}
+.modal-subtitle{font-size:14px;color:var(--cf-muted);margin:0 0 20px;line-height:1.5}
+.modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px}
+.m-card{background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:14px;display:flex;gap:12px;align-items:flex-start}
+.m-icon{font-size:22px;flex-shrink:0;margin-top:2px}
+.m-card strong{font-size:13px;display:block;color:#0f172a}
+.m-tag{display:inline-block;background:#ecfdf5;color:#059669;border:1px solid #a7f3d0;font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;margin:2px 0 4px}
+.m-card p{font-size:12px;color:var(--cf-muted);margin:0;line-height:1.5}
+.modal-actions{display:flex;justify-content:flex-end;gap:10px;align-items:center;border-top:1px solid var(--cf-border);padding-top:16px}
+.btn-cf-dash{background:var(--cf-orange);color:white;font-size:13px;font-weight:700;text-decoration:none;padding:10px 18px;border-radius:8px;transition:background .15s}
+.btn-cf-dash:hover{background:var(--cf-orange-hover)}
+.btn-cf-dismiss{background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;font-size:13px;font-weight:600;padding:10px 16px;border-radius:8px;cursor:pointer}
+.btn-cf-dismiss:hover{background:#e2e8f0}
+.header-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:20px;padding:5px 12px;font-size:12px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .15s}
+.header-btn:hover{background:var(--cf-orange);border-color:var(--cf-orange)}
+
 @media(max-width:860px){
   .grid{grid-template-columns:1fr}
   .pipeline-flow{grid-template-columns:1fr;gap:8px}
   .pipe-arrow{transform:rotate(90deg);padding:4px 0}
   .telemetry-grid{grid-template-columns:1fr 1fr}
+  .modal-grid{grid-template-columns:1fr}
 }
 </style></head><body>
 <header>
@@ -74,7 +98,10 @@ button.primary:disabled{opacity:.5;cursor:wait}
     <svg viewBox="0 0 24 24"><path d="M18.8 9.5C18.2 6.4 15.4 4 12 4 9.3 4 7 5.5 6 7.8 3.7 8.3 2 10.4 2 12.9c0 2.8 2.2 5.1 5 5.1h11.5c2.5 0 4.5-2 4.5-4.5 0-2.3-1.8-4.2-4.2-4z"/></svg>
     <span>CLOUDFLARE <b>AI GATEWAY</b></span>
   </div>
-  <span class="sub">Auto Router 智慧路由流水線</span>
+  <div style="display:flex;align-items:center;gap:12px">
+    <button type="button" class="header-btn" id="btn-open-modal">☁️ CF 免費好物</button>
+    <span class="sub">Auto Router 智慧路由流水線</span>
+  </div>
 </header>
 <main>
   <div class="eyebrow">Cloudflare Zero Trust & AI Gateway</div>
@@ -193,6 +220,59 @@ button.primary:disabled{opacity:.5;cursor:wait}
   </div>
 
   <p class="footer">Cloudflare AI Gateway · Auto Router Lab · <a href="https://developers.cloudflare.com/ai-gateway/features/routing/auto-router/" target="_blank" rel="noopener" style="color:var(--cf-orange);text-decoration:none">官方文件 ↗</a></p>
+
+  <!-- Modal Popup: Cloudflare Free Ecosystem -->
+  <div id="cf-modal" class="modal-overlay" style="display:none">
+    <div class="modal-card">
+      <button type="button" class="modal-close" id="modal-close">✕</button>
+      <div class="modal-badge">CLOUDFLARE FREE TIER ECOSYSTEM</div>
+      <h2 class="modal-title">☁️ 探索 Cloudflare 免費邊緣神器</h2>
+      <p class="modal-subtitle">你知道嗎？本實驗室運行的所有核心架構，在 Cloudflare 上全部「永久免費」！</p>
+      
+      <div class="modal-grid">
+        <div class="m-card">
+          <div class="m-icon">🛡️</div>
+          <div>
+            <strong>Zero Trust Access</strong>
+            <span class="m-tag">永久免費 50 位使用者</span>
+            <p>企業級身分防護，免密碼 Email / GitHub 一鍵登入，徹底告別傳統 VPN。</p>
+          </div>
+        </div>
+
+        <div class="m-card">
+          <div class="m-icon">⚡</div>
+          <div>
+            <strong>Cloudflare Workers</strong>
+            <span class="m-tag">每日 100,000 次免費請求</span>
+            <p>全球 300+ 城市 0ms 冷啟動，本實驗室後端 API 就是跑在 Workers 上。</p>
+          </div>
+        </div>
+
+        <div class="m-card">
+          <div class="m-icon">🧠</div>
+          <div>
+            <strong>Workers AI & Gateway</strong>
+            <span class="m-tag">每日 10,000 Neurons 免費算力</span>
+            <p>免自建 GPU，0.5 秒直接在邊緣推論 Llama 3.2 等最新 AI 模型。</p>
+          </div>
+        </div>
+
+        <div class="m-card">
+          <div class="m-icon">💾</div>
+          <div>
+            <strong>R2 物件儲存 & D1 資料庫</strong>
+            <span class="m-tag">0 出口流量費 (Zero Egress)</span>
+            <p>每月 10GB 免費儲存 + 每日 500 萬次讀取，徹底告別雲端帳單刺客。</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <a href="https://dash.cloudflare.com/" target="_blank" rel="noopener" class="btn-cf-dash">前往 Cloudflare 探索 ↗</a>
+        <button type="button" class="btn-cf-dismiss" id="modal-dismiss">我知道了，關閉</button>
+      </div>
+    </div>
+  </div>
 </main>
 
 <script>
@@ -206,6 +286,13 @@ $('btn-copy').onclick=()=>{
   $('btn-copy').textContent='✓ 已複製！';
   setTimeout(()=>{$('btn-copy').textContent='📋 複製回答'},2000);
 };
+
+const openModal=()=>{$('cf-modal').style.display='flex'};
+const closeModal=()=>{$('cf-modal').style.display='none'};
+$('btn-open-modal').onclick=openModal;
+$('modal-close').onclick=closeModal;
+$('modal-dismiss').onclick=closeModal;
+$('cf-modal').onclick=e=>{if(e.target===$('cf-modal'))closeModal()};
 
 $('send').onclick=async()=>{
   const prompt=$('prompt').value.trim();
@@ -271,6 +358,14 @@ $('send').onclick=async()=>{
     setTimeout(()=>{
       $('section-result')?.scrollIntoView({behavior:'smooth',block:'start'});
     },100);
+
+    // 首次成功測試後，延遲 1.8 秒貼心彈出生態系好物 (不打擾第一眼看回答)
+    if(!localStorage.getItem('cf_modal_seen')){
+      setTimeout(()=>{
+        openModal();
+        localStorage.setItem('cf_modal_seen','true');
+      },1800);
+    }
 
   }catch(e){
     $('status-tag').textContent='處理失敗';

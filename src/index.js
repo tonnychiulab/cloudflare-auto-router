@@ -121,7 +121,7 @@ button.primary:disabled{opacity:.5;cursor:wait}
     </section>
 
     <!-- Section 03: Hero Pipeline (方案 1) -->
-    <section class="card wide">
+    <section class="card wide" id="section-result">
       <div class="row" style="margin-bottom:12px">
         <h2>03 / 路由流水線 (Pipeline Visualizer)</h2>
         <span class="tag" id="status-tag">待命 (Standby)</span>
@@ -266,6 +266,11 @@ $('send').onclick=async()=>{
     $('metric-model').textContent=data.model||'未提供';
     $('metric-reason').textContent=data.reason||'未提供';
     $('metric-decision').textContent=data.decision||'未提供';
+
+    // 成功回傳後，平滑捲動至下方 03 / 路由流水線
+    setTimeout(()=>{
+      $('section-result')?.scrollIntoView({behavior:'smooth',block:'start'});
+    },100);
 
   }catch(e){
     $('status-tag').textContent='處理失敗';

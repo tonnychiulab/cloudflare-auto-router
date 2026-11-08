@@ -6,7 +6,7 @@
   "type": "module",
   "authors": [
     "Tonny Chiu (@tonnychiulab)",
-    "Antigravity (Google DeepMind AI Pair Programmer)"
+    "Antigravity CLI"
   ],
   "scripts": {
     "deploy": "wrangler deploy",

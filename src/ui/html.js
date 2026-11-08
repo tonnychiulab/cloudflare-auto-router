@@ -312,7 +312,7 @@ button.primary:disabled{opacity:.5;cursor:wait}
   </div>
 
   <p class="footer">
-    Cloudflare Auto Router 實驗室 · <b>v1.0.0</b> · 共同作者：<a href="https://github.com/tonnychiulab" target="_blank" rel="noopener" style="color:var(--cf-text);font-weight:700;text-decoration:none">Tonny Chiu</a> &amp; <b>Antigravity</b> (AI Pair Programmer) · <a href="https://github.com/tonnychiulab/cloudflare-auto-router" target="_blank" rel="noopener" style="color:var(--cf-orange);text-decoration:none">GitHub 原始碼 ↗</a>
+    Cloudflare Auto Router 實驗室 · <b>v1.0.0</b> · 共同作者：<a href="https://github.com/tonnychiulab" target="_blank" rel="noopener" style="color:var(--cf-text);font-weight:700;text-decoration:none">Tonny Chiu</a> &amp; <b>Antigravity CLI</b> · <a href="https://github.com/tonnychiulab/cloudflare-auto-router" target="_blank" rel="noopener" style="color:var(--cf-orange);text-decoration:none">GitHub 原始碼 ↗</a>
   </p>
 
   <!-- Modal Popup: Cloudflare Free Ecosystem -->

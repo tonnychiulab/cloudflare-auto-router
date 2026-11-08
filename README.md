@@ -93,8 +93,8 @@ bash scripts/setup-cicd-wizard.sh
 
 ## 👥 共同作者 (Co-Authors)
 
-* **Tonny Chiu** ([@tonnychiulab](https://github.com/tonnychiulab)) - 產品架構發想、實測除錯與技術方向指導
-* **Antigravity** (Google DeepMind Advanced Agentic AI Assistant) - 模組解耦重構、資安加固、CI/CD 腳本與前端打磨
+* **Tonny Chiu** ([@tonnychiulab](https://github.com/tonnychiulab))
+* **Antigravity CLI**
 
 ---
 
@@ -110,6 +110,7 @@ bash scripts/setup-cicd-wizard.sh
 | **15:46** | 🤖 AI | **永遠忘記瀏覽器層級體驗（Favicon 與 Title）**<br>眼裡只有 DOM 排版，完全忘記宣告 Favicon，導致加書籤出現黑底空白地球；且語系切換時分頁 `<title>` 紋風不動。 | 植入內嵌 SVG Favicon，`<title>` 納入語系字典動態同步；並於全域與專案建立硬性規範。 |
 | **16:21** | 🤖 AI | **「把私人除錯截圖推上公開 GitHub」大翻車**<br>把主人在對話中圈紅筆討論的私人截圖（含 Chrome 書籤列）直接推上公開倉庫當官網宣傳圖！ | 緊急 `git reset` 與 `force-push`，自遠端歷史將該圖片徹底抹除，改換乾淨 UI 裁切圖。 |
 | **16:24** | 🤖 AI | **文案充滿生硬的 AI 機械公關味**<br>產生出來的 README 與 About 充斥著大陸腔與空洞詞彙，毫無在地工程師的真實語感。 | 痛定思痛，全面翻修為台灣在地的 IT 工程師口吻（「踩雷」、「秒回」、「安全感拉滿」）。 |
+| **16:33** | 🤖 AI | **共同作者頭銜像在喊軍隊口令**<br>自封一長串落落長的「Google DeepMind Advanced Agentic AI Assistant - 模組解耦重構...」，被主人吐槽「是在喊口令喔？」。 | 砍掉浮誇冗長的自吹頭銜，正名為簡短俐落又有科技感的 **Antigravity CLI**！ |
 
 ---
 

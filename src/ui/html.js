@@ -98,8 +98,31 @@ button.primary:disabled{opacity:.5;cursor:wait}
 .header-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:20px;padding:5px 12px;font-size:12px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .15s}
 .header-btn:hover{background:var(--cf-orange);border-color:var(--cf-orange)}
 
+/* Quota Dashboard */
+.quota-dashboard{background:#fff;border:1px solid var(--cf-border);border-radius:14px;padding:18px 20px;margin-bottom:26px;box-shadow:0 4px 14px rgba(15,23,42,.03)}
+.quota-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px}
+.qh-title{display:flex;align-items:center;gap:8px;font-size:14px;color:#1e293b}
+.quota-badge{font-size:11px;font-weight:700;color:#047857;background:#ecfdf5;border:1px solid #a7f3d0;padding:3px 10px;border-radius:20px}
+.quota-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.q-card{background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;justify-content:space-between}
+.q-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.q-label{font-size:12px;font-weight:700;color:#475569}
+.q-chip{font-size:10px;font-weight:800;padding:2px 7px;border-radius:4px;letter-spacing:.02em}
+.q-chip-green{background:#ecfdf5;color:#059669;border:1px solid #a7f3d0}
+.q-chip-orange{background:#fff7ed;color:var(--cf-orange);border:1px solid #fed7aa}
+.q-chip-blue{background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe}
+.q-value{display:flex;align-items:baseline;gap:6px;margin-bottom:8px}
+.q-value strong{font-size:22px;font-weight:800;color:#0f172a;letter-spacing:-.02em}
+.q-unit{font-size:12px;color:var(--cf-muted);font-weight:600}
+.q-progress-bar{height:6px;background:#e2e8f0;border-radius:3px;overflow:hidden;margin-bottom:8px}
+.q-progress-fill{height:100%;background:linear-gradient(90deg,#10b981,#34d399);border-radius:3px;transition:width .3s}
+.q-sub{font-size:11px;color:var(--cf-muted);line-height:1.4}
+.q-specs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.q-spec-item{font-size:11px;background:#fff;border:1px solid #cbd5e1;border-radius:4px;padding:1px 6px;color:#334155;font-weight:600}
+
 @media(max-width:860px){
   .grid{grid-template-columns:1fr}
+  .quota-grid{grid-template-columns:1fr}
   .pipeline-flow{grid-template-columns:1fr;gap:8px}
   .pipe-arrow{transform:rotate(90deg);padding:4px 0}
   .telemetry-grid{grid-template-columns:1fr 1fr}
@@ -118,8 +141,67 @@ button.primary:disabled{opacity:.5;cursor:wait}
 </header>
 <main>
   <div class="eyebrow" data-i18n="eyebrow">Cloudflare Zero Trust & AI Gateway</div>
-  <h1 data-i18n="pageTitle">Auto Router 即時路由決策管線</h1>
+  <h1 data-i18n="pageTitle">Auto Router 智慧路由流水線</h1>
   <p class="intro" data-i18n="pageIntro">觀察 Cloudflare Edge 邊緣分類器如何分析 Prompt，動態決策並路由至最佳 LLM 模型。支援即時免費容錯自動降級（Automatic Fallback）。</p>
+
+  <!-- 邊緣免費額度儀表盤 (Free Tier Quota Dashboard) -->
+  <div class="quota-dashboard">
+    <div class="quota-header">
+      <div class="qh-title">
+        <span class="pulsing-dot"></span>
+        <strong data-i18n="quotaTitle">Cloudflare 邊緣免費額度儀表盤 (Free Tier Quota)</strong>
+      </div>
+      <span class="quota-badge" data-i18n="quotaBadge">100% 永久免費方案 · 零帳單刺客</span>
+    </div>
+    <div class="quota-grid">
+      <!-- Card 1: Workers AI Neurons -->
+      <div class="q-card">
+        <div class="q-top">
+          <span class="q-label" data-i18n="q1Label">每日免費 AI 算力</span>
+          <span class="q-chip q-chip-green" data-i18n="q1Chip">Workers AI</span>
+        </div>
+        <div class="q-value">
+          <strong>10,000</strong> <span class="q-unit">Neurons / 日</span>
+        </div>
+        <div class="q-progress-bar">
+          <div class="q-progress-fill" style="width: 99%;"></div>
+        </div>
+        <div class="q-sub" data-i18n="q1Sub">相當於每日約 700 ~ 1,200 次免費大模型對話</div>
+      </div>
+
+      <!-- Card 2: Workers Daily Requests -->
+      <div class="q-card">
+        <div class="q-top">
+          <span class="q-label" data-i18n="q2Label">每日邊緣請求額度</span>
+          <span class="q-chip q-chip-orange" data-i18n="q2Chip">Cloudflare Workers</span>
+        </div>
+        <div class="q-value">
+          <strong id="q-remaining-reqs">100,000</strong> <span class="q-unit">次 / 日</span>
+        </div>
+        <div class="q-progress-bar">
+          <div class="q-progress-fill" id="q-reqs-progress" style="width: 100%;"></div>
+        </div>
+        <div class="q-sub" id="q-usage-sub">今日已調度：0 次 · 剩餘 100,000 次</div>
+      </div>
+
+      <!-- Card 3: Single Task Specs & Zero Cost -->
+      <div class="q-card">
+        <div class="q-top">
+          <span class="q-label" data-i18n="q3Label">單次任務規格與費用</span>
+          <span class="q-chip q-chip-blue" data-i18n="q3Chip">Zero Egress</span>
+        </div>
+        <div class="q-value">
+          <strong style="color: #10b981;">$0.00</strong> <span class="q-unit" data-i18n="q3Unit">免費 / 次</span>
+        </div>
+        <div class="q-specs">
+          <span class="q-spec-item" data-i18n="q3Spec1">上限 12,000 字元</span>
+          <span class="q-spec-item" data-i18n="q3Spec2">0ms 冷啟動</span>
+          <span class="q-spec-item" data-i18n="q3Spec3">免自建 GPU</span>
+        </div>
+        <div class="q-sub" data-i18n="q3Sub">全球 300+ 城市邊緣秒級推論，無出口流量費</div>
+      </div>
+    </div>
+  </div>
 
   <div class="grid">
     <!-- Section 01 -->
@@ -308,6 +390,30 @@ function applyLocale(lang) {
 
   $('prompt').placeholder = dict.promptPlaceholder;
   renderModelSelect();
+  updateQuotaUI();
+}
+
+function updateQuotaUI() {
+  const dict = window.__LOCALES[currentLang] || window.__LOCALES['zh-TW'];
+  const todayKey = 'cf_req_count_' + new Date().toISOString().slice(0, 10);
+  const count = parseInt(localStorage.getItem(todayKey) || '0', 10);
+  const remaining = Math.max(0, 100000 - count);
+  const percent = Math.max(0, ((remaining / 100000) * 100)).toFixed(1);
+
+  const reqEl = $('q-remaining-reqs');
+  if (reqEl) reqEl.textContent = remaining.toLocaleString();
+
+  const progEl = $('q-reqs-progress');
+  if (progEl) progEl.style.width = percent + '%';
+
+  const subEl = $('q-usage-sub');
+  if (subEl) {
+    if (currentLang === 'zh-TW') {
+      subEl.textContent = '今日已調度：' + count + ' 次 · 剩餘 ' + remaining.toLocaleString() + ' 次 (' + percent + '%)';
+    } else {
+      subEl.textContent = 'Today: ' + count + ' reqs · Remaining: ' + remaining.toLocaleString() + ' (' + percent + '%)';
+    }
+  }
 }
 
 function renderModelSelect() {
@@ -407,6 +513,12 @@ $('send').onclick = async () => {
     $('metric-model').textContent = cleanModel + (isFallback ? (dict.fallbackBadge || ' (自動降級)') : '');
     $('metric-reason').textContent = data.reason || '—';
     $('metric-decision').textContent = data.decision || '—';
+
+    // 累計本日測試額度計數並即時更新儀表盤
+    const todayKey = 'cf_req_count_' + new Date().toISOString().slice(0, 10);
+    const count = parseInt(localStorage.getItem(todayKey) || '0', 10);
+    localStorage.setItem(todayKey, String(count + 1));
+    updateQuotaUI();
 
     // 成功回傳後，平滑捲動至下方 03 / 路由流水線
     setTimeout(() => {

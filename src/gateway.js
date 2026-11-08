@@ -4,6 +4,33 @@
 
 import { DEFAULT_FALLBACK_MODEL } from './config/models.js';
 
+/**
+ * 封裝向 Cloudflare AI Gateway 發送 chat completions 請求
+ */
+async function callGateway(gatewayUrl, headers, model, prompt) {
+  const response = await fetch(gatewayUrl, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({
+      model,
+      messages: [{ role: 'user', content: prompt }]
+    })
+  });
+
+  let data;
+  try {
+    data = await response.json();
+  } catch {
+    throw {
+      code: 'UPSTREAM_PARSE_FAILED',
+      message: `Cloudflare 回應無法解析 (HTTP ${response.status})`,
+      status: 502
+    };
+  }
+
+  return { response, data };
+}
+
 export async function dispatchPrompt(prompt, requestedModel, env) {
   const accountId = env.CLOUDFLARE_ACCOUNT_ID;
   const gatewayId = env.CLOUDFLARE_GATEWAY_ID;
@@ -29,72 +56,56 @@ export async function dispatchPrompt(prompt, requestedModel, env) {
   };
 
   // 初次向指定模型發起請求
-  let r = await fetch(gatewayUrl, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify({
-      model: targetModel,
-      messages: [{ role: 'user', content: prompt }]
-    })
-  });
-
-  let j;
-  try {
-    j = await r.json();
-  } catch {
-    throw { code: 'UPSTREAM_PARSE_FAILED', message: `Cloudflare 回應無法解析 (HTTP ${r.status})`, status: 502 };
-  }
+  let { response: currentRes, data: currentData } = await callGateway(gatewayUrl, headers, targetModel, prompt);
 
   let isFallback = false;
   let fallbackReason = '';
+  const fallbackModel = env.DEFAULT_FALLBACK_MODEL || DEFAULT_FALLBACK_MODEL;
 
-  // 智慧降級容錯邏輯：若 auto 挑中付費旗艦模型遭拒 (403)，自動降級至免費繁中模型
-  if (!r.ok && targetModel === 'cloudflare/auto' && r.status === 403) {
-    const errMsg = j?.error?.message || '';
+  // 智慧降級容錯邏輯：若 auto 挑中付費旗艦模型遭拒 (403)，自動降級至免費受支援模型
+  if (!currentRes.ok && targetModel === 'cloudflare/auto' && currentRes.status === 403) {
+    const errorText = [
+      currentData?.error?.message,
+      currentData?.errors?.[0]?.message,
+      typeof currentData?.error === 'string' ? currentData.error : '',
+      JSON.stringify(currentData || '')
+    ].join(' ').toLowerCase();
+
     if (
-      errMsg.includes('not allowed to access') ||
-      errMsg.includes('kimi-k3') ||
-      errMsg.includes('denied')
+      errorText.includes('not allowed to access') ||
+      errorText.includes('kimi-k3') ||
+      errorText.includes('denied') ||
+      errorText.includes('aierror')
     ) {
-      const fallbackTarget = env.DEFAULT_FALLBACK_MODEL || DEFAULT_FALLBACK_MODEL;
-      const r2 = await fetch(gatewayUrl, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({
-          model: fallbackTarget,
-          messages: [{ role: 'user', content: prompt }]
-        })
-      });
-
       try {
-        const j2 = await r2.json();
-        if (r2.ok) {
-          r = r2;
-          j = j2;
+        const { response: fallbackRes, data: fallbackData } = await callGateway(gatewayUrl, headers, fallbackModel, prompt);
+        if (fallbackRes.ok) {
+          currentRes = fallbackRes;
+          currentData = fallbackData;
           isFallback = true;
-          fallbackReason = 'Auto Router 挑中旗艦付費模型 (Kimi K3)，已自動為您降級至免費的 Llama 3.2 順利回答！';
+          fallbackReason = `Auto Router 挑中旗艦付費模型 (Kimi K3)，已自動為您降級至免費模型 (${fallbackModel}) 順利回答！`;
         }
       } catch {
-        // 若降級請求異常，保留原錯誤處理
+        // 若降級請求異常，保留原錯誤處理流程
       }
     }
   }
 
-  if (!r.ok) {
-    const detail = j?.error?.message || j?.errors?.[0]?.message || (typeof j === 'object' ? JSON.stringify(j) : '');
+  if (!currentRes.ok) {
+    const detail = currentData?.error?.message || currentData?.errors?.[0]?.message || (typeof currentData === 'object' ? JSON.stringify(currentData) : '');
     throw {
       code: 'GATEWAY_ERROR',
-      message: `Cloudflare 回傳 HTTP ${r.status}${detail ? '：' + detail : ''}`,
+      message: `Cloudflare 回傳 HTTP ${currentRes.status}${detail ? '：' + detail : ''}`,
       status: 502,
-      raw: j
+      raw: currentData
     };
   }
 
   return {
-    answer: j.choices?.[0]?.message?.content || '',
-    model: isFallback ? `${DEFAULT_FALLBACK_MODEL} (自動降級)` : (r.headers.get('cf-aig-routed-model') || targetModel),
-    reason: isFallback ? fallbackReason : r.headers.get('cf-aig-routing-reason'),
-    decision: r.headers.get('cf-aig-routing-decision-id'),
+    answer: currentData.choices?.[0]?.message?.content || '',
+    model: isFallback ? fallbackModel : (currentRes.headers.get('cf-aig-routed-model') || targetModel),
+    reason: isFallback ? fallbackReason : currentRes.headers.get('cf-aig-routing-reason'),
+    decision: currentRes.headers.get('cf-aig-routing-decision-id'),
     isFallback
   };
 }

@@ -24,20 +24,20 @@ export async function verifyAccess(request, env) {
     const parts = token.split('.');
     if (parts.length !== 3) return false;
 
-    const h = JSON.parse(new TextDecoder().decode(decode(parts[0])));
-    const p = JSON.parse(new TextDecoder().decode(decode(parts[1])));
+    const header = JSON.parse(new TextDecoder().decode(decode(parts[0])));
+    const payload = JSON.parse(new TextDecoder().decode(decode(parts[1])));
     const now = Math.floor(Date.now() / 1000);
 
     // 驗證演算法、簽發者、Audience、過期時間
     if (
-      h.alg !== 'RS256' ||
-      !h.kid ||
-      p.iss !== 'https://' + team ||
-      !Array.isArray(p.aud) ||
-      !p.aud.includes(aud) ||
-      !Number.isFinite(p.exp) ||
-      p.exp <= now ||
-      (p.nbf && p.nbf > now)
+      header.alg !== 'RS256' ||
+      !header.kid ||
+      payload.iss !== 'https://' + team ||
+      !Array.isArray(payload.aud) ||
+      !payload.aud.includes(aud) ||
+      !Number.isFinite(payload.exp) ||
+      payload.exp <= now ||
+      (payload.nbf && payload.nbf > now)
     ) {
       return false;
     }
@@ -47,7 +47,7 @@ export async function verifyAccess(request, env) {
     if (!response.ok) return false;
 
     const keys = await response.json();
-    const jwk = keys.keys?.find(k => k.kid === h.kid && k.kty === 'RSA');
+    const jwk = keys.keys?.find(k => k.kid === header.kid && k.kty === 'RSA');
     if (!jwk) return false;
 
     const key = await crypto.subtle.importKey(

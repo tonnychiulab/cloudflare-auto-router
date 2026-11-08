@@ -2,11 +2,12 @@
  * English Locale Dictionary (en-US)
  */
 export const enUS = {
+  browserTitle: 'Cloudflare Auto Router Lab | Smart AI Routing Pipeline',
   headerTitle: 'CLOUDFLARE <b>AI GATEWAY</b>',
-  headerSub: 'Auto Router Pipeline Lab',
+  headerSub: 'Auto Router Smart Routing Pipeline',
   cfFreeBtn: '☁️ Free Ecosystem',
   eyebrow: 'Cloudflare Zero Trust & AI Gateway',
-  pageTitle: 'Auto Router Live Decision Pipeline',
+  pageTitle: 'Auto Router Smart Routing Pipeline',
   pageIntro: 'Observe how Cloudflare Edge classifier analyzes prompts and dynamically routes to the optimal LLM. Features instant automatic fallback protection.',
 
   sec1Title: '01 / Access Security',
@@ -32,6 +33,7 @@ export const enUS = {
   statusRunning: 'Routing in progress…',
   statusComplete: 'Pipeline Completed (200 OK)',
   statusError: 'Execution Failed',
+  fallbackBadge: ' (Auto-Fallback)',
 
   p1Title: 'Task Ingestion',
   p1Idle: 'Awaiting Input',
@@ -73,6 +75,10 @@ export const enUS = {
     CONFIG_INCOMPLETE: 'Worker is missing Gateway or Token configuration.',
     INVALID_PROMPT: 'Prompt length is invalid.',
     ORIGIN_MISMATCH: 'Origin check mismatch.',
-    AUTH_REQUIRED: 'Valid Cloudflare Access login is required.'
+    AUTH_REQUIRED: 'Valid Cloudflare Access login is required.',
+    GATEWAY_ERROR: 'Cloudflare AI Gateway encountered an error. Please try again.',
+    UPSTREAM_PARSE_FAILED: 'Failed to parse upstream AI Gateway response.',
+    NOT_FOUND: 'Requested API route was not found.',
+    INTERNAL_ERROR: 'An unexpected internal error occurred.'
   }
 };

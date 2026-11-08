@@ -2,11 +2,12 @@
  * 繁體中文語系字典 (zh-TW)
  */
 export const zhTW = {
+  browserTitle: 'Cloudflare Auto Router 實驗室｜AI 智慧路由流水線',
   headerTitle: 'CLOUDFLARE <b>AI GATEWAY</b>',
   headerSub: 'Auto Router 智慧路由流水線',
   cfFreeBtn: '☁️ CF 免費好物',
   eyebrow: 'Cloudflare Zero Trust & AI Gateway',
-  pageTitle: 'Auto Router 即時路由決策管線',
+  pageTitle: 'Auto Router 智慧路由流水線',
   pageIntro: '觀察 Cloudflare Edge 邊緣分類器如何分析 Prompt，動態決策並路由至最佳 LLM 模型。支援即時免費容錯自動降級（Automatic Fallback）。',
 
   sec1Title: '01 / 存取防護',
@@ -24,14 +25,15 @@ export const zhTW = {
   modelLabel: '指定路由策略 / 模型',
   promptLabel: '提問 Prompt',
   promptPlaceholder: '輸入你想讓 AI 解決的任務…',
-  btnSubmit: '開始測試管線 →',
+  btnSubmit: '開始測試流水線 →',
   btnRunning: '正在路由執行中…',
 
   sec3Title: '03 / 路由流水線 (Pipeline Visualizer)',
   statusStandby: '待命 (Standby)',
   statusRunning: '路由處理中…',
-  statusComplete: '管線完成 (200 OK)',
+  statusComplete: '流水線完成 (200 OK)',
   statusError: '處理失敗',
+  fallbackBadge: ' (自動降級)',
 
   p1Title: '任務請求',
   p1Idle: '待輸入',
@@ -73,6 +75,10 @@ export const zhTW = {
     CONFIG_INCOMPLETE: 'Worker 尚未完成 Gateway 或 Token 設定。',
     INVALID_PROMPT: '問題長度不正確。',
     ORIGIN_MISMATCH: '來源檢查不符 (Origin Mismatch)',
-    AUTH_REQUIRED: '需要有效的 Cloudflare Access 登入。請檢查 Access 設定。'
+    AUTH_REQUIRED: '需要有效的 Cloudflare Access 登入。請檢查 Access 設定。',
+    GATEWAY_ERROR: 'Cloudflare AI Gateway 回傳錯誤，請稍後重試。',
+    UPSTREAM_PARSE_FAILED: '上游回應解析失敗，請確認 AI Gateway 狀態。',
+    NOT_FOUND: '找不到要求的 API 路由。',
+    INTERNAL_ERROR: '系統內部發生非預期錯誤。'
   }
 };

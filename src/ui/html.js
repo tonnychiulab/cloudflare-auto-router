@@ -10,7 +10,7 @@ export function renderHtml() {
   const modelsJson = JSON.stringify(SUPPORTED_MODELS);
   const localesJson = JSON.stringify({ 'zh-TW': zhTW, 'en-US': enUS });
 
-  return `<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Cloudflare Auto Router 實驗室</title><style>
+  return `<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23f6821f' d='M18.8 9.5C18.2 6.4 15.4 4 12 4 9.3 4 7 5.5 6 7.8 3.7 8.3 2 10.4 2 12.9c0 2.8 2.2 5.1 5 5.1h11.5c2.5 0 4.5-2 4.5-4.5 0-2.3-1.8-4.2-4.2-4z'/%3E%3C/svg%3E"><title>Cloudflare Auto Router 實驗室｜AI 智慧路由流水線</title><style>
 :root{--cf-orange:#f6821f;--cf-orange-hover:#e06d12;--cf-dark:#151b28;--cf-navy:#1e293b;--cf-bg:#f8fafc;--cf-border:#e2e8f0;--cf-text:#0f172a;--cf-muted:#64748b;--cf-green:#10b981;--cf-amber:#f59e0b;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;color:var(--cf-text);background:var(--cf-bg)}
 *{box-sizing:border-box}body{margin:0;line-height:1.6}
 header{background:var(--cf-dark);color:white;padding:16px max(6vw,24px);display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid var(--cf-orange);flex-wrap:wrap;gap:10px}
@@ -296,6 +296,10 @@ function applyLocale(lang) {
   document.documentElement.lang = lang === 'zh-TW' ? 'zh-Hant' : 'en';
   const dict = window.__LOCALES[lang] || window.__LOCALES['zh-TW'];
 
+  if (dict.browserTitle) {
+    document.title = dict.browserTitle;
+  }
+
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.getAttribute('data-i18n');
     const val = key.split('.').reduce((acc, k) => acc?.[k], dict);
@@ -383,22 +387,24 @@ $('send').onclick = async () => {
     $('status-tag').textContent = dict.statusComplete;
     $('answer').textContent = data.answer || '';
 
-    const isFallback = data.model && data.model.includes('(自動降級)');
+    const isFallback = Boolean(data.isFallback);
+    const cleanModel = data.model ? data.model.replace('@cf/', '') : '—';
+
     if (isFallback) {
       $('pipeline-pill').className = 'status-pill pill-fallback';
       $('pipeline-pill').textContent = 'AUTO-FALLBACK ⚠️';
       $('step-model').className = 'pipe-step fallback';
-      $('val-model-name').textContent = 'Llama 3.2 3B (Fallback)';
+      $('val-model-name').textContent = cleanModel + ' (Fallback)';
       $('live-dot').style.background = '#ea580c';
     } else {
       $('pipeline-pill').className = 'status-pill pill-success';
       $('pipeline-pill').textContent = 'ROUTED ✓';
       $('step-model').className = 'pipe-step active';
-      $('val-model-name').textContent = data.model ? data.model.replace('@cf/', '') : '—';
+      $('val-model-name').textContent = cleanModel;
       $('live-dot').style.background = '#10b981';
     }
 
-    $('metric-model').textContent = data.model || '—';
+    $('metric-model').textContent = cleanModel + (isFallback ? (dict.fallbackBadge || ' (自動降級)') : '');
     $('metric-reason').textContent = data.reason || '—';
     $('metric-decision').textContent = data.decision || '—';
 
@@ -406,14 +412,6 @@ $('send').onclick = async () => {
     setTimeout(() => {
       $('section-result')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 100);
-
-    // 首次成功測試後，延遲 1.8 秒貼心彈出 (不打擾第一眼看回答)
-    if (!localStorage.getItem('cf_modal_seen')) {
-      setTimeout(() => {
-        openModal();
-        localStorage.setItem('cf_modal_seen', 'true');
-      }, 1800);
-    }
   } catch (e) {
     $('status-tag').textContent = dict.statusError;
     $('pipeline-pill').className = 'status-pill pill-running';

@@ -8,14 +8,20 @@ import { renderHtml } from './ui/html.js';
 
 export default {
   async fetch(request, env) {
-    if (!await verifyAccess(request, env)) {
-      return new Response('需要有效的 Cloudflare Access 登入。', {
-        status: 403,
-        headers: { 'cache-control': 'no-store' }
-      });
-    }
-
     const url = new URL(request.url);
+
+    if (!await verifyAccess(request, env)) {
+      if (url.pathname.startsWith('/api/')) {
+        return Response.json(
+          { error: { code: 'AUTH_REQUIRED', message: '需要有效的 Cloudflare Access 登入。' } },
+          { status: 403, headers: { 'cache-control': 'no-store' } }
+        );
+      }
+      return new Response(
+        '<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><title>需要 Cloudflare Access 登入</title></head><body style="font-family:sans-serif;padding:40px;text-align:center"><h2>🔒 需要有效的 Cloudflare Access 登入</h2><p>請檢查 Cloudflare Access 權限與憑據配置。</p></body></html>',
+        { status: 403, headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' } }
+      );
+    }
 
     if (url.pathname === '/' && request.method === 'GET') {
       return new Response(renderHtml(), {
@@ -50,6 +56,9 @@ export default {
       }
     }
 
-    return new Response('Not found', { status: 404 });
+    return Response.json(
+      { error: { code: 'NOT_FOUND', message: '找不到此端點 (Not Found)。' } },
+      { status: 404 }
+    );
   }
 };
